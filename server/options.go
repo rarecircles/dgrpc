@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/bufbuild/connect-go"
+	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -32,13 +33,14 @@ type Options struct {
 	ConnectWebReflectionServices []string
 	ConnectWebAllowJSON          bool
 	ConnectWebStrictContentType  bool
-	ConnectWebHTTPHandlers       []HTTPHandlerGetter
+	ConnectWebHTTPHandlers       []HTTPHandlerRegisterer
 	ConnectWebCORS               *cors.Cors
 
 	// discovery-service-only options
 	ServiceDiscoveryURL *url.URL
 }
 
+type HTTPHandlerRegisterer func(*mux.Router)
 type HTTPHandlerGetter func() (string, http.Handler)
 
 func NewOptions() *Options {
@@ -256,11 +258,11 @@ func OverrideTraceID() Option {
 	}
 }
 
-// WithConnectStrictContentType option can be used to add http hanlders to the connect web server
+// WithConnectStrictContentType option can be used to add http handlers to the connect web server
 // these handlers will be added to the router AFTER the connect-web handlers, and thus have a lower
 // priority than the connect-web handlers
-func WithConnectWebHTTPHandlers(handlerGetters []HTTPHandlerGetter) Option {
+func WithConnectWebHTTPHandlers(handlerRegisters []HTTPHandlerRegisterer) Option {
 	return func(options *Options) {
-		options.ConnectWebHTTPHandlers = handlerGetters
+		options.ConnectWebHTTPHandlers = handlerRegisters
 	}
 }

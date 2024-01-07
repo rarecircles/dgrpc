@@ -102,9 +102,8 @@ func New(handlerGetters []HandlerGetter, opts ...server.Option) *ConnectWebServe
 		mux.Handle(grpchealth.NewHandler(grpchealth.NewStaticChecker()))
 	}
 
-	for _, handlerGetter := range options.ConnectWebHTTPHandlers {
-		pattern, handler := handlerGetter()
-		mux.Handle(pattern, handler)
+	for _, handlerRegister := range options.ConnectWebHTTPHandlers {
+		handlerRegister(mux)
 	}
 
 	var handler http.Handler
